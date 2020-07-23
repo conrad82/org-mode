@@ -1,0 +1,504 @@
+#+TITLE: Emacs configuration
+#+AUTHOR: conrad82
+
+* Introduction
+  :PROPERTIES:
+  :VISIBILITY: all
+  :END:
+
+  My' config for org-mode.
+  *The following code must be included in your [[~/.emacs][~/.emacs]] or [[~/.emacs.d/init.el]] file (replace /path/to/file/):*
+    #+BEGIN_SRC
+    (package-initialize)
+    (setq vc-follow-symlinks t)
+    (org-babel-load-file "/path/to/file/configuration.org")
+    #+END_SRC
+
+    Only run first time!:
+    #+begin_src bash
+    echo "(package-initialize)" > ~/.emacs.d/init.el
+    echo "(setq vc-follow-symlinks t)" >> ~/.emacs.d/init.el
+    echo "(org-babel-load-file \"~/Nextcloud/org/config/configuration.org\")" >> ~/.emacs.d/init.el
+    #+end_src
+
+    #+RESULTS:
+
+  The command =org-babel-load-file= creates [[./configuration.el][configuration.el]] file which is run during startup
+
+* Packages
+** Melpa (repository)
+   Tutorial: From youtube video python https://www.youtube.com/watch?v=6BlTGPsjGJk
+             and github repo https://github.com/wernerandrew/jedi-starter
+	     and use-package homepage https://jwiegley.github.io/use-package/installation/
+   #+BEGIN_SRC emacs-lisp
+   (require 'package)
+   (add-to-list
+     'package-archives
+     '("melpa" . "https://melpa.org/packages/") t)
+   (package-initialize)
+   #+END_SRC
+** use-package
+   https://github.com/jwiegley/use-package
+   #+BEGIN_SRC emacs-lisp
+   ;; This is only needed once, near the top of the file
+   (if (not (package-installed-p 'use-package))
+    (progn
+      (package-refresh-contents)
+      (package-install 'use-package)))
+
+   (eval-when-compile
+     (require 'use-package))   
+   #+END_SRC
+
+   #+RESULTS:
+   : use-package
+** which-key
+   #+BEGIN_SRC emacs-lisp
+   (use-package which-key
+    :ensure t
+    :init (which-key-mode +1))
+   #+END_SRC
+
+   #+RESULTS:
+
+** company
+   http://company-mode.github.io/
+   Company is a text completion framework for Emacs. 
+   #+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :defer t
+    :diminish (company-mode . " ⓐ")
+    :init
+    (global-company-mode)
+    :config
+    (setq company-tooltip-align-annotations t
+          company-idle-delay 0.2
+          company-minimum-prefix-length 2
+          company-require-match nil))
+   #+END_SRC
+
+   #+RESULTS:
+   : t
+
+** anaconda-mode
+   [[https://github.com/proofit404/anaconda-mode]]
+   https://www.reddit.com/r/emacs/comments/bg0rue/your_opinion_on_best_config_for_python_development/elht7ak/?utm_source=share&utm_medium=ios_app&utm_name=iossmf
+   As you see, I use the default bindings. I switch to virtual environment using M-x pythonic-activate (pythonic is a dependency of anaconda-mode). I jump to definition via M-.. Autocompletion works via C-M-i and you get nice candidate list if you have ivy installed. There is also default binding for help but I don't use it. I think there is a way to eval region but I don't use it since I develop Python libraries and do related interactive testing in Jupyter notebook (actually, in emacs-jupyter, but that's a different story.)
+
+   #+BEGIN_SRC emacs-lisp
+   (setq python-shell-interpreter "/bin/python3")
+   (use-package anaconda-mode
+    :ensure t
+    :init 
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+    (add-hook 'python-mode-hook 'display-line-numbers-mode))
+
+    (eval-after-load "company"
+     '(add-to-list 'company-backends 'company-anaconda))
+   #+END_SRC
+
+   #+RESULTS:
+   | company-anaconda | company-bbdb | company-eclim | company-semantic | company-clang | company-xcode | company-cmake | company-capf | company-files | (company-dabbrev-code company-gtags company-etags company-keywords) | company-oddmuse | company-dabbrev |
+
+** magit
+   Git version control
+   #+BEGIN_SRC emacs-lisp
+   (use-package magit :bind ("C-x g" . magit-status) :ensure t)
+   #+END_SRC
+
+   #+RESULTS:
+   : magit-status
+
+** projectile
+   https://github.com/bbatsov/projectile
+   #+BEGIN_SRC emacs-lisp
+   (use-package projectile
+   :ensure t
+   :init
+   (projectile-mode +1)
+   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+   #+END_SRC
+
+   #+RESULTS:
+
+** tramp mode
+    Built-in. Open file with =ssh:user@ip/path/file=
+** emacs-lisp
+    The *scratch* buffer can evaluate elisp code.
+    The keyboard shortcut is useful for running elisp function, place cursor at end of function/code and press.
+    Source: https://blog.aaronbieber.com/2016/08/07/getting-started-with-emacs-lisp.html
+    #+BEGIN_SRC emacs-lisp
+    (define-key lisp-interaction-mode-map (kbd "<C-return>") 'eval-last-sexp)
+    #+END_SRC
+** treemacs
+   https://github.com/Alexander-Miller/treemacs
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package treemacs
+   :ensure t
+   :defer t
+   :init
+   (with-eval-after-load 'winum
+     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+   :config
+   (progn
+    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay      0.5
+          treemacs-directory-name-transformer    #'identity
+          treemacs-display-in-side-window        t
+          treemacs-eldoc-display                 t
+          treemacs-file-event-delay              5000
+          treemacs-file-follow-delay             0.2
+          treemacs-file-name-transformer         #'identity
+          treemacs-follow-after-init             t
+          treemacs-git-command-pipe              ""
+          treemacs-goto-tag-strategy             'refetch-index
+          treemacs-indentation                   2
+          treemacs-indentation-string            " "
+          treemacs-is-never-other-window         nil
+          treemacs-max-git-entries               5000
+          treemacs-missing-project-action        'ask
+          treemacs-no-png-images                 nil
+          treemacs-no-delete-other-windows       t
+          treemacs-project-follow-cleanup        nil
+          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                      'left
+          treemacs-recenter-distance             0.1
+          treemacs-recenter-after-file-follow    nil
+          treemacs-recenter-after-tag-follow     nil
+          treemacs-recenter-after-project-jump   'always
+          treemacs-recenter-after-project-expand 'on-distance
+          treemacs-show-cursor                   nil
+          treemacs-show-hidden-files             t
+          treemacs-silent-filewatch              nil
+          treemacs-silent-refresh                nil
+          treemacs-sorting                       'alphabetic-asc
+          treemacs-space-between-root-nodes      t
+          treemacs-tag-follow-cleanup            t
+          treemacs-tag-follow-delay              1.5
+          treemacs-width                         30)
+
+   (treemacs-follow-mode t)
+   (treemacs-filewatch-mode t)
+   (treemacs-fringe-indicator-mode t))
+   :bind
+   (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+   (use-package treemacs-projectile
+   :after treemacs projectile
+   :ensure t)
+
+   (use-package treemacs-icons-dired
+   :after treemacs dired
+   :ensure t
+   :config (treemacs-icons-dired-mode))
+
+   (use-package treemacs-magit
+   :after treemacs magit
+   :ensure t)
+
+   #+END_SRC
+
+   #+RESULTS:
+** org-caldav
+   https://github.com/dengste/org-caldav
+   Credentials stored in =~/.authinfo.gpg=
+   GPG key was generated using =gpg --gen-key=, password stored in gnome keyring.
+   #+BEGIN_SRC emacs-lisp
+   (use-package org-caldav
+    :defer t
+
+    :init
+    ; Caldav settings
+    (setq org-caldav-url             "https://server.home/remote.php/dav/calendars/conrad82")
+    (setq org-caldav-calendar-id     "org")
+    (setq org-caldav-inbox           "~/Nextcloud/org/caldav.org")
+    (setq org-caldav-files           '("~/Nextcloud/org/gtd.org"))
+    (setq org-caldav-save-directory  "~/Nextcloud/org/caldav")
+    (setq org-icalendar-timezone     "Europe/Paris")) 
+
+    (setq org-caldav-skip-conditions '(nottimestamp))
+    (setq org-caldav-delete-org-entries 'always)
+    (setq org-caldav-delete-calendar-entries 'always)
+    (setq org-caldav-show-sync-results nil)
+
+    ; icalendar settings
+    (setq org-icalendar-alarm-time 60)
+    
+    ; Sync settings
+    (add-hook 'kill-emacs-hook    'org-caldav-sync)
+    (add-hook 'emacs-startup-hook 'org-caldav-sync)
+    ; (add-hook 'after-save-hook    'org-caldav-sync)
+   #+END_SRC
+
+   #+RESULTS:
+   | org-caldav-sync |
+
+* Orgmode
+** Initial settings and paths
+    Getting started, keyboard shortcuts from the manual
+    Source: https://orgmode.org/guide/Activation.html#Activation
+    #+BEGIN_SRC emacs-lisp
+    (global-set-key "\C-cl" 'org-store-link)
+    (global-set-key "\C-ca" 'org-agenda)
+    (global-set-key "\C-cc" 'org-capture)
+    (global-set-key "\C-cb" 'org-switchb)
+    #+END_SRC
+
+    #+RESULTS:
+    : org-switchb
+  
+    Variables:
+    #+BEGIN_SRC emacs-lisp
+    (setq org-directory "~/Nextcloud/org")
+    (setq org-agenda-files (file-expand-wildcards "~/Nextcloud/org/*.org"))
+    (setq org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
+    #+END_SRC
+
+    #+RESULTS:
+    : ((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
+
+** Capture templates
+   #+BEGIN_SRC emacs-lisp
+   (setq org-capture-templates
+      '(("c" "Inbox"           entry (file+headline "~/Nextcloud/org/gtd.org" "inbox") "* %?\n")
+	("x" "Inbox Clipboard" entry (file+headline "~/Nextcloud/org/gtd.org" "inbox") "* %? %x\n")
+	("z" "Inbox Clip url"  entry (file+headline "~/Nextcloud/org/gtd.org" "inbox") "* [[%x][%?]]\n")
+	("a" "Shopping"     entry (file+headline "~/Nextcloud/org/gtd.org" "inbox") "* BUY %?\n")
+				      ))
+   #+End_src
+
+** Agenda templates
+   #+BEGIN_SRC emacs-lisp
+   (setq org-agenda-custom-commands
+      '(
+	("z" "Agenda and next actions"
+	 ((agenda "")
+	  (todo "NEXT")
+	  (todo "BUY")
+	 ) nil ("~/Nextcloud/org/agenda.pdf" "~/Nextcloud/org/agenda.html")
+	)
+
+        ("x" "Next 60 days of non-repeating events" agenda ""
+         ((org-agenda-span 45)                          ;; [1]
+          (org-agenda-start-on-weekday 0)               ;; [2]
+          (org-agenda-time-grid nil)                    
+          (org-agenda-repeating-timestamp-show-all t)   ;; [3]
+          (org-agenda-entry-types '(:timestamp :sexp)))  ;; [4]               
+	 )
+	 ))
+   #+END_SRC
+
+
+   Found from https://lists.gnu.org/archive/html/emacs-orgmode/2012-07/msg00409.html
+   Do not show empty days in agenda.
+   #+BEGIN_SRC emacs-lisp
+   (setq org-agenda-show-all-dates nil)
+   #+END_SRC
+
+   #+RESULTS:
+   
+** Orgmode hidden gems
+   https://yiufung.net/post/org-mode-hidden-gems-pt1/
+   #+BEGIN_SRC emacs-lisp
+   (setq org-catch-invisible-edits 'show-and-error)
+   #+END_SRC
+
+   #+RESULTS:
+   : show-and-error
+** Babel
+   #+BEGIN_SRC emacs-lisp
+   (org-babel-do-load-languages
+   'org-babel-load-languages
+      '((python . t)))
+   #+END_SRC
+
+   #+RESULTS:
+** Auto-save and auto-revert
+   to minimize sync conflicts with beorg
+
+   Turn on auto-revert buffer. 
+   In case org-files are left open, while using beorg on phone
+   #+BEGIN_SRC emacs-lisp
+   (global-auto-revert-mode 1)
+   #+END_SRC
+
+   Based on https://christiantietze.de/posts/2019/03/sync-emacs-org-files/
+   Auto-save org buffers
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'auto-save-hook 'org-save-all-org-buffers)
+   #+END_SRC
+
+   #+RESULTS:
+   | org-save-all-org-buffers |
+
+** org-refile settings, hierarchical
+   http://doc.norang.ca/org-mode.html
+   Also read org.el file in /usr/share/emacs/26.3/lisp/org
+   #+BEGIN_SRC emacs-lisp
+   (setq org-refile-use-outline-path 'file)
+   (setq org-outline-path-complete-in-steps nil)
+   (setq org-refile-allow-creating-parent-nodes 'confirm)
+   (setq org-refile-targets ( quote (("gtd.org" :maxlevel . 9))))
+
+   (ido-mode 1)
+   #+END_SRC
+
+   #+RESULTS:
+
+* Custom functions
+** Import / export files
+   The following function is made for making a link-list of files from org-inbox folder and also move to org-files folder
+   Should be run from the end of your inbox item (* inbox)
+
+   #+BEGIN_SRC emacs-lisp
+    (defun mb/org-process-inbox ()
+       "Makes list of all files in org-inbox folder, and moves files to org-files"
+       (interactive)
+       (setq org-inbox-files (directory-files "~/Nextcloud/org/org-inbox/" nil "[^.]"))
+       (dolist (cfile org-inbox-files)
+	(insert (concat "** [[./org-files/" cfile "][" cfile "]]\n"))
+	(rename-file (concat "~/Nextcloud/org/org-inbox/" cfile) "~/Nextcloud/org/org-files/")))
+
+   (global-set-key (kbd "s-<f12>") 'mb/org-process-inbox)
+   #+END_SRC
+
+   #+RESULTS:
+   : mb/org-process-inbox
+
+* Interface
+** Mini-buffer auto-complete
+    #+BEGIN_SRC emacs-lisp
+    (ido-mode 1)
+    #+END_SRC
+** Automatic end parenthesis
+    #+BEGIN_SRC
+    (electric-pair-mode 1)
+    #+END_SRC
+** Add undo to ctrl-z
+   Disabled in favor of cua mode
+    #+BEGIN_SRC 
+    (global-set-key (kbd "C-z") 'undo)
+    #+END_SRC
+
+    #+RESULTS:
+    : undo
+** ctrl-f search all lines
+    #+BEGIN_SRC emacs-lisp
+    (global-set-key (kbd "C-f") 'occur)
+    #+END_SRC
+
+    #+RESULTS:
+    : occur
+
+** Add CUA mode
+   #+BEGIN_SRC emacs-lisp
+   (cua-mode t)
+   #+END_SRC
+** cycle buffer ctrl-tab
+    #+BEGIN_SRC emacs-lisp
+    (require 'bind-key)
+    (bind-key* "C-<tab>" 'previous-buffer)
+       
+    ;;(global-set-key (kbd "C-<tab>") 'previous-buffer)
+    #+END_SRC
+
+    #+RESULTS:
+    : previous-buffer
+
+** switch to gtd buffer
+   #+BEGIN_SRC emacs-lisp
+   (defun switch-to-gtd ()
+     (interactive)
+     (switch-to-buffer "gtd.org"))
+
+     (global-set-key (kbd "C-|") 'switch-to-gtd)
+   #+END_SRC
+
+   #+RESULTS:
+   : switch-to-gtd
+
+** Avy goto char timer
+   #+BEGIN_SRC emacs-lisp
+   (global-set-key (kbd "C-.") 'avy-goto-char-timer)
+   #+END_SRC
+
+   #+RESULTS:
+   : avy-goto-char-timer
+
+** Theme
+    #+BEGIN_SRC emacs-lisp
+    (load-theme 'wombat t)
+    #+END_SRC
+
+    #+RESULTS:
+    : t
+
+** Configs from Brad Wright
+   Source: https://github.com/bradwright/emacs.d
+*** Line width for word wrapping
+       #+BEGIN_SRC emacs-lisp
+       (setq-default fill-column 80)
+       #+END_SRC
+*** Encoding UTF-8
+       #+BEGIN_SRC emacs-lisp
+       (set-terminal-coding-system 'utf-8)
+       (set-keyboard-coding-system 'utf-8)
+       (prefer-coding-system 'utf-8)
+       #+END_SRC
+*** Switch windows
+       #+BEGIN_SRC emacs-lisp
+       (global-set-key (kbd "M-o") 'other-window)
+       #+END_SRC
+
+       #+RESULTS:
+       : other-window
+*** Switch buffers
+       #+BEGIN_SRC emacs-lisp
+       (global-set-key (kbd "C-x C-b") 'ibuffer)
+       #+END_SRC
+
+       #+RESULTS:
+       : ibuffer
+** font size
+   #+BEGIN_SRC emacs-lisp
+   (set-face-attribute 'default nil :height 100)
+   #+END_SRC
+* Startup
+** Disable splash startup screen
+   #+BEGIN_SRC emacs-lisp
+   (setq inhibit-startup-screen t)
+   #+END_SRC
+** Startup size
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+   ;;(setq initial-frame-alist '((top . 1) (left . 1) (width . 135) (height . 95)))
+   ;;(toggle-frame-fullscreen)
+   #+END_SRC
+
+   #+RESULTS:
+   : ((fullscreen . maximized))
+
+** Open file on startup
+   #+BEGIN_SRC emacs-lisp
+   (treemacs)
+   (find-file "~/Nextcloud/org/gtd.org")
+   (delete-other-windows)
+   #+END_SRC
+
+   #+RESULTS:
+   : #<buffer gtd.org>
+
+* Resources
+  These are useful resources for using emacs org-mode and getting configured
+  - Getting started with Org Mode https://www.youtube.com/watch?v=SzA2YODtgK4
+  - Getting started with Emacs lisp https://blog.aaronbieber.com/2016/08/07/getting-started-with-emacs-lisp.html
+  - Python integration https://www.youtube.com/watch?v=6BlTGPsjGJk

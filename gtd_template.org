@@ -1,0 +1,52 @@
+[[~/Nextcloud/org/gtd.org][gtd.org]] [[~/.emacs.d/configuration.org][configuration.org]]
+* config
+#+TODO: BUY(b) | DONE(d)
+#+LINK: yt https://www.youtube.com/results?search_query=%s
+* inbox
+  where new items are usually added.
+  typically by using =org-capture=
+* action-lists
+  my action lists
+  instead of tags, I use separate lists for each context
+** home
+** work
+** shopping
+** read-watch
+* gtd-lists
+  my gtd lists, such as projects, someday/maybe, groceries etc
+** groceries
+   for groceries, I use Beorg (iOS app), Nextcloud backend and TODO tag "BUY"
+*** BUY Milk
+** projects
+** someday-maybe
+** waiting-for
+* tickler
+  Tickler folders, see David Allens book.
+  Instead of 43 folders, only monthly folders and next year are used. 
+  For day to day tracking, agenda and schedule/deadline is used
+** january
+** february
+** march
+** april
+** may
+** june
+** july
+** august
+** september
+** october
+** november
+** december
+*** Buy presents
+    DEADLINE: <2020-12-24 to. +1y>
+** 2021
+* project-support-material
+  See David Allens book for details.
+  Any support material for projects which are not TODOs, but are needed for completing the project.
+** org-mode gtd system
+*** Getting started with org-mode https://www.youtube.com/watch?v=SzA2YODtgK4
+*** Youtube search for org-mode [[yt:org mode]]
+* reference
+  Everything I need to store, which does not involve TODOs or projects.
+** Dinner recipes
+** Org-mode resources
+   See configuration.org
